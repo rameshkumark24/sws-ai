@@ -11,7 +11,10 @@ export interface Document {
   status: "processing" | "completed" | "failed";
 }
 
-export interface UploadFile {
-  file: File;
+export interface SelectedFile {
   id: string;
+  name: string;
+  size: number;
+  type: string;
+  status: "pending";
 }
