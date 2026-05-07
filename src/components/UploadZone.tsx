@@ -3,19 +3,18 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
+import { useUploadStore } from "@/store/useUploadStore";
 
-interface UploadZoneProps {
-  onFilesSelected: (files: File[]) => void;
-}
+export default function UploadZone() {
+  const addFiles = useUploadStore((state) => state.addFiles);
 
-export default function UploadZone({ onFilesSelected }: UploadZoneProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
-        onFilesSelected(acceptedFiles);
+        addFiles(acceptedFiles);
       }
     },
-    [onFilesSelected]
+    [addFiles]
   );
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
