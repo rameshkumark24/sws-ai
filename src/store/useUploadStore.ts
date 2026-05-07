@@ -1,8 +1,8 @@
 "use client";
 
 import { create } from "zustand";
+import axios from "axios";
 import type { UploadQueueItem } from "@/types";
-import { startUploadSimulation } from "@/lib/uploadSimulator";
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -21,6 +21,36 @@ interface UploadStoreActions {
 }
 
 export type UploadStore = UploadStoreState & UploadStoreActions;
+
+async function uploadFile(
+  item: UploadQueueItem,
+  callbacks: {
+    onProgress: (progress: number) => void;
+    onComplete: () => void;
+    onError: () => void;
+  }
+) {
+  try {
+    const formData = new FormData();
+    formData.append("file", item.file);
+
+    await axios.post("/api/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (event) => {
+        const percent = event.total
+          ? Math.round((event.loaded * 100) / event.total)
+          : 0;
+        callbacks.onProgress(percent);
+      },
+    });
+
+    callbacks.onComplete();
+  } catch {
+    callbacks.onError();
+  }
+}
 
 export const useUploadStore = create<UploadStore>((set, get) => ({
   items: [],
@@ -53,7 +83,7 @@ export const useUploadStore = create<UploadStore>((set, get) => ({
 
     newItems.forEach((item) => {
       get().setStatus(item.id, "uploading");
-      startUploadSimulation(item.id, {
+      uploadFile(item, {
         onProgress: (progress) => get().updateProgress(item.id, progress),
         onComplete: () => get().setStatus(item.id, "complete"),
         onError: () => get().setStatus(item.id, "failed"),
@@ -77,7 +107,7 @@ export const useUploadStore = create<UploadStore>((set, get) => ({
       ),
     }));
 
-    startUploadSimulation(id, {
+    uploadFile(item, {
       onProgress: (progress) => get().updateProgress(id, progress),
       onComplete: () => get().setStatus(id, "complete"),
       onError: () => get().setStatus(id, "failed"),

@@ -14,6 +14,26 @@ export interface UploadQueueItem {
   createdAt: Date;
 }
 
+export interface DocumentMetadata {
+  id: string;
+  originalName: string;
+  storedFileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadStatus: string;
+  uploadDate: string;
+  storagePath: string;
+}
+
+export interface ApiDocument {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
+  status: string;
+}
+
 export interface Document {
   id: string;
   name: string;
